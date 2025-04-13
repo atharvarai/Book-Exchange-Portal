@@ -22,13 +22,11 @@ const BookCard: React.FC<BookCardProps> = ({
     requests = [],
 }) => {
     const [showExchangeForm, setShowExchangeForm] = useState(false);
-    const [requestSent, setRequestSent] = useState<BookOption | null>(null);
     const [showTooltip, setShowTooltip] = useState(false);
     const [exchangeOffer, setExchangeOffer] = useState<ExchangeOffer>({
         bookTitle: '',
         bookAuthor: '',
     });
-    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const isOwner = currentUser.id === book.ownerId;
     const isAvailable = book.status === 'available';
@@ -79,46 +77,19 @@ const BookCard: React.FC<BookCardProps> = ({
         // Don't allow new request if this specific option has been rejected
         if (getRejectedStatus(requestType)) return;
 
-        // Start the transition animation
-        setIsTransitioning(true);
+        // Just call the onRequestBook function without setting temporary state
         onRequestBook(book.id, requestType);
-        setRequestSent(requestType);
-
-        // Keep "Request Sent!" state for 2 seconds
-        setTimeout(() => {
-            // After 2 seconds, start the transition to "Request Pending"
-            // We keep isTransitioning true during this period for animation
-            setRequestSent(null);
-
-            // After another 1 second, complete the transition
-            setTimeout(() => {
-                setIsTransitioning(false);
-            }, 1000);
-        }, 2000);
+        // No need for temporary state change or timeout
     };
 
     const handleExchangeSubmit = () => {
         // Don't allow new request if this specific option has been rejected
         if (getRejectedStatus('exchange')) return;
 
-        // Start the transition animation
-        setIsTransitioning(true);
         onRequestBook(book.id, 'exchange', exchangeOffer);
         setShowExchangeForm(false);
-        setRequestSent('exchange');
-
-        // Keep "Request Sent!" state for 2 seconds
-        setTimeout(() => {
-            // After 2 seconds, start the transition to "Request Pending"
-            setRequestSent(null);
-
-            // After another 1 second, complete the transition
-            setTimeout(() => {
-                setIsTransitioning(false);
-            }, 1000);
-        }, 2000);
-
         setExchangeOffer({ bookTitle: '', bookAuthor: '' });
+        // No need for temporary state change or timeout
     };
 
     // Function to handle option toggles with mutual exclusivity
@@ -153,11 +124,11 @@ const BookCard: React.FC<BookCardProps> = ({
         // Check if this specific option has been accepted
         const isThisOptionAccepted = getAcceptedStatus(option);
 
-        // Button should be disabled if it has a pending request, is rejected, accepted, or was just requested
-        const isDisabled = isThisOptionRejected || isThisOptionAccepted || hasPendingRequest || requestSent === option;
+        // Button should be disabled if it has a pending request, is rejected, accepted
+        const isDisabled = isThisOptionRejected || isThisOptionAccepted || hasPendingRequest;
 
         let displayText = buttonText;
-        let variant: 'primary' | 'success' | 'danger' | 'secondary' = requestSent === option ? 'success' : 'primary';
+        let variant: 'primary' | 'success' | 'danger' | 'secondary' = 'primary';
 
         if (isThisOptionRejected) {
             displayText = `${option.charAt(0).toUpperCase() + option.slice(1)} Request Rejected`;
@@ -168,25 +139,10 @@ const BookCard: React.FC<BookCardProps> = ({
         } else if (isThisOptionPending) {
             displayText = `${option.charAt(0).toUpperCase() + option.slice(1)} Request Pending`;
             variant = 'secondary';
-        } else if (requestSent === option) {
-            displayText = `${option.charAt(0).toUpperCase() + option.slice(1)} Request Sent!`;
-            variant = 'success';
         } else if (hasPendingRequest) {
             // If there's a pending request for another option, disable this button but keep its original text
             displayText = buttonText;
             variant = 'primary';
-        }
-
-        // Add animation classes conditionally
-        let animationClass = '';
-        if (isTransitioning) {
-            if (requestSent === option) {
-                // For the initial "Request Sent!" state
-                animationClass = 'animate-pulse';
-            } else if (isThisOptionPending) {
-                // For the transition to "Request Pending" state
-                animationClass = 'transition-all duration-700 ease-in-out';
-            }
         }
 
         return (
@@ -194,7 +150,7 @@ const BookCard: React.FC<BookCardProps> = ({
                 size="sm"
                 variant={variant}
                 onClick={() => handleRequestClick(option)}
-                className={`w-full transition-all duration-300 ${animationClass}`}
+                className="w-full transition-all duration-600 ease-in-out"
                 disabled={isDisabled}
             >
                 {displayText}
@@ -383,60 +339,50 @@ const BookCard: React.FC<BookCardProps> = ({
                                                 size="sm"
                                                 variant={getRejectedStatus('exchange') ? 'danger' :
                                                     getAcceptedStatus('exchange') ? 'success' :
-                                                        pendingRequestType === 'exchange' ? 'secondary' :
-                                                            requestSent === 'exchange' ? 'success' : 'primary'}
+                                                        pendingRequestType === 'exchange' ? 'secondary' : 'primary'}
                                                 onClick={() => !getRejectedStatus('exchange') && !getAcceptedStatus('exchange') && !hasPendingRequest && setShowExchangeForm(true)}
-                                                className={`w-full transition-all duration-300 ${isTransitioning && requestSent === 'exchange' ? 'animate-pulse' :
-                                                        isTransitioning && pendingRequestType === 'exchange' ? 'transition-all duration-700 ease-in-out' : ''
-                                                    }`}
-                                                disabled={getRejectedStatus('exchange') || getAcceptedStatus('exchange') || hasPendingRequest || requestSent === 'exchange'}
+                                                className="w-full"
+                                                disabled={getRejectedStatus('exchange') || getAcceptedStatus('exchange') || hasPendingRequest}
                                             >
                                                 {getRejectedStatus('exchange') ? 'Exchange Request Rejected' :
                                                     getAcceptedStatus('exchange') ? 'Exchange Request Accepted' :
-                                                        pendingRequestType === 'exchange' ? 'Exchange Request Pending' :
-                                                            requestSent === 'exchange' ? 'Exchange Request Sent!' : 'Exchange it'}
+                                                        pendingRequestType === 'exchange' ? 'Exchange Request Pending' : 'Exchange it'}
                                             </Button>
                                         ) : (
-                                            <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200 shadow-sm transition-all duration-300 animate-fadeIn">
-                                                <h4 className="font-medium text-gray-700 mb-2">Offer Your Book for Exchange</h4>
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Your book title"
-                                                        value={exchangeOffer.bookTitle}
-                                                        onChange={(e) => setExchangeOffer(prev => ({
-                                                            ...prev,
-                                                            bookTitle: e.target.value
-                                                        }))}
-                                                        className="w-full p-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                                                    />
-                                                </div>
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Your book author"
-                                                        value={exchangeOffer.bookAuthor}
-                                                        onChange={(e) => setExchangeOffer(prev => ({
-                                                            ...prev,
-                                                            bookAuthor: e.target.value
-                                                        }))}
-                                                        className="w-full p-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                                                    />
-                                                </div>
-                                                <div className="flex gap-2 pt-2">
+                                            <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Your book title"
+                                                    value={exchangeOffer.bookTitle}
+                                                    onChange={(e) => setExchangeOffer(prev => ({
+                                                        ...prev,
+                                                        bookTitle: e.target.value
+                                                    }))}
+                                                    className="w-full p-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Your book author"
+                                                    value={exchangeOffer.bookAuthor}
+                                                    onChange={(e) => setExchangeOffer(prev => ({
+                                                        ...prev,
+                                                        bookAuthor: e.target.value
+                                                    }))}
+                                                    className="w-full p-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                />
+                                                <div className="flex gap-2">
                                                     <Button
                                                         size="sm"
                                                         onClick={handleExchangeSubmit}
-                                                        className="flex-1 transition-all hover:scale-105 disabled:hover:scale-100"
-                                                        disabled={!exchangeOffer.bookTitle || !exchangeOffer.bookAuthor}
+                                                        className="flex-1"
                                                     >
-                                                        Submit Offer
+                                                        Submit
                                                     </Button>
                                                     <Button
                                                         size="sm"
                                                         variant="secondary"
                                                         onClick={() => setShowExchangeForm(false)}
-                                                        className="flex-1 transition-all hover:scale-105"
+                                                        className="flex-1"
                                                     >
                                                         Cancel
                                                     </Button>
