@@ -28,6 +28,7 @@ const BookCard: React.FC<BookCardProps> = ({
         bookTitle: '',
         bookAuthor: '',
     });
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const isOwner = currentUser.id === book.ownerId;
     const isAvailable = book.status === 'available';
@@ -78,19 +79,45 @@ const BookCard: React.FC<BookCardProps> = ({
         // Don't allow new request if this specific option has been rejected
         if (getRejectedStatus(requestType)) return;
 
+        // Start the transition animation
+        setIsTransitioning(true);
         onRequestBook(book.id, requestType);
         setRequestSent(requestType);
-        setTimeout(() => setRequestSent(null), 3000); // Reset after 3 seconds
+
+        // Keep "Request Sent!" state for 2 seconds
+        setTimeout(() => {
+            // After 2 seconds, start the transition to "Request Pending"
+            // We keep isTransitioning true during this period for animation
+            setRequestSent(null);
+
+            // After another 1 second, complete the transition
+            setTimeout(() => {
+                setIsTransitioning(false);
+            }, 1000);
+        }, 2000);
     };
 
     const handleExchangeSubmit = () => {
         // Don't allow new request if this specific option has been rejected
         if (getRejectedStatus('exchange')) return;
 
+        // Start the transition animation
+        setIsTransitioning(true);
         onRequestBook(book.id, 'exchange', exchangeOffer);
         setShowExchangeForm(false);
         setRequestSent('exchange');
-        setTimeout(() => setRequestSent(null), 3000);
+
+        // Keep "Request Sent!" state for 2 seconds
+        setTimeout(() => {
+            // After 2 seconds, start the transition to "Request Pending"
+            setRequestSent(null);
+
+            // After another 1 second, complete the transition
+            setTimeout(() => {
+                setIsTransitioning(false);
+            }, 1000);
+        }, 2000);
+
         setExchangeOffer({ bookTitle: '', bookAuthor: '' });
     };
 
@@ -150,12 +177,24 @@ const BookCard: React.FC<BookCardProps> = ({
             variant = 'primary';
         }
 
+        // Add animation classes conditionally
+        let animationClass = '';
+        if (isTransitioning) {
+            if (requestSent === option) {
+                // For the initial "Request Sent!" state
+                animationClass = 'animate-pulse';
+            } else if (isThisOptionPending) {
+                // For the transition to "Request Pending" state
+                animationClass = 'transition-all duration-700 ease-in-out';
+            }
+        }
+
         return (
             <Button
                 size="sm"
                 variant={variant}
                 onClick={() => handleRequestClick(option)}
-                className="w-full"
+                className={`w-full transition-all duration-300 ${animationClass}`}
                 disabled={isDisabled}
             >
                 {displayText}
@@ -347,7 +386,9 @@ const BookCard: React.FC<BookCardProps> = ({
                                                         pendingRequestType === 'exchange' ? 'secondary' :
                                                             requestSent === 'exchange' ? 'success' : 'primary'}
                                                 onClick={() => !getRejectedStatus('exchange') && !getAcceptedStatus('exchange') && !hasPendingRequest && setShowExchangeForm(true)}
-                                                className="w-full"
+                                                className={`w-full transition-all duration-300 ${isTransitioning && requestSent === 'exchange' ? 'animate-pulse' :
+                                                        isTransitioning && pendingRequestType === 'exchange' ? 'transition-all duration-700 ease-in-out' : ''
+                                                    }`}
                                                 disabled={getRejectedStatus('exchange') || getAcceptedStatus('exchange') || hasPendingRequest || requestSent === 'exchange'}
                                             >
                                                 {getRejectedStatus('exchange') ? 'Exchange Request Rejected' :
@@ -356,40 +397,46 @@ const BookCard: React.FC<BookCardProps> = ({
                                                             requestSent === 'exchange' ? 'Exchange Request Sent!' : 'Exchange it'}
                                             </Button>
                                         ) : (
-                                            <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Your book title"
-                                                    value={exchangeOffer.bookTitle}
-                                                    onChange={(e) => setExchangeOffer(prev => ({
-                                                        ...prev,
-                                                        bookTitle: e.target.value
-                                                    }))}
-                                                    className="w-full p-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    placeholder="Your book author"
-                                                    value={exchangeOffer.bookAuthor}
-                                                    onChange={(e) => setExchangeOffer(prev => ({
-                                                        ...prev,
-                                                        bookAuthor: e.target.value
-                                                    }))}
-                                                    className="w-full p-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                />
-                                                <div className="flex gap-2">
+                                            <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200 shadow-sm transition-all duration-300 animate-fadeIn">
+                                                <h4 className="font-medium text-gray-700 mb-2">Offer Your Book for Exchange</h4>
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Your book title"
+                                                        value={exchangeOffer.bookTitle}
+                                                        onChange={(e) => setExchangeOffer(prev => ({
+                                                            ...prev,
+                                                            bookTitle: e.target.value
+                                                        }))}
+                                                        className="w-full p-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    />
+                                                </div>
+                                                <div className="relative">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Your book author"
+                                                        value={exchangeOffer.bookAuthor}
+                                                        onChange={(e) => setExchangeOffer(prev => ({
+                                                            ...prev,
+                                                            bookAuthor: e.target.value
+                                                        }))}
+                                                        className="w-full p-2 border rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                    />
+                                                </div>
+                                                <div className="flex gap-2 pt-2">
                                                     <Button
                                                         size="sm"
                                                         onClick={handleExchangeSubmit}
-                                                        className="flex-1"
+                                                        className="flex-1 transition-all hover:scale-105 disabled:hover:scale-100"
+                                                        disabled={!exchangeOffer.bookTitle || !exchangeOffer.bookAuthor}
                                                     >
-                                                        Submit
+                                                        Submit Offer
                                                     </Button>
                                                     <Button
                                                         size="sm"
                                                         variant="secondary"
                                                         onClick={() => setShowExchangeForm(false)}
-                                                        className="flex-1"
+                                                        className="flex-1 transition-all hover:scale-105"
                                                     >
                                                         Cancel
                                                     </Button>

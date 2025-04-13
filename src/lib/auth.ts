@@ -1,7 +1,12 @@
 import { User } from '../types';
 
 // Use environment variables or fallback to localhost in development
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Ensure the URL is absolute and not relative
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?
+    (process.env.NEXT_PUBLIC_API_URL.startsWith('http') ?
+        process.env.NEXT_PUBLIC_API_URL :
+        `https://${process.env.NEXT_PUBLIC_API_URL}`) :
+    'http://localhost:3001/api';
 
 // Debug log to verify API URL
 console.log('Auth Service API URL:', API_URL);
