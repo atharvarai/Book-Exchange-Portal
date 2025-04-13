@@ -9,12 +9,29 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(morgan('dev'));
 
 // Initialize data store
 initializeData();
+
+// Root route for API info
+app.get('/', (req, res) => {
+    res.json({
+        message: 'Book Exchange API',
+        version: '1.0',
+        endpoints: {
+            auth: '/api/auth',
+            books: '/api/books',
+            requests: '/api/requests'
+        }
+    });
+});
 
 // Routes
 app.use('/api', routes);

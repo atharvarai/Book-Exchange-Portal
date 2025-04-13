@@ -3,6 +3,9 @@ import { User } from '../types';
 // Use environment variables or fallback to localhost in development
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+// Debug log to verify API URL
+console.log('Auth Service API URL:', API_URL);
+
 class AuthService {
     async register(userData: {
         name: string;
