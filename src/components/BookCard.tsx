@@ -32,7 +32,7 @@ const BookCard: React.FC<BookCardProps> = ({
     const isOwner = currentUser.id === book.ownerId;
     const isAvailable = book.status === 'available';
 
-    // Check if the user has already been rejected for this book
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const hasBeenRejected = requests.some(
         request => request.bookId === book.id &&
             request.seekerId === currentUser.id &&
