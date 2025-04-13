@@ -1,7 +1,8 @@
 import { Book, BookRequest } from '../types';
 import { BookStatus, BookOption } from '@/types';
 
-const API_URL = 'http://localhost:3001/api';
+// Use environment variables or fallback to localhost in development
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 class BookService {
     // Book methods
