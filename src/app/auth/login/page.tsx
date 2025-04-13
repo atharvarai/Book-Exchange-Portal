@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Button from '@/components/Button';
 import { authService } from '@/lib/auth';
-import { bookService } from '@/lib/books';
-import { Book } from '@/types';
 
 const LoginPage = () => {
     const router = useRouter();
@@ -16,7 +14,6 @@ const LoginPage = () => {
         email: '',
         password: '',
     });
-    const [books, setBooks] = useState<Book[]>([]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -33,8 +30,9 @@ const LoginPage = () => {
             } else {
                 setError(result.message);
             }
-        } catch (err) {
+        } catch (error) {
             setError('An error occurred during login');
+            console.error(error);
         } finally {
             setIsLoading(false);
         }
@@ -53,7 +51,7 @@ const LoginPage = () => {
                         Welcome Back
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
-                        Don't have an account?{' '}
+                        Don&apos;t have an account?{' '}
                         <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
                             Create one now
                         </Link>

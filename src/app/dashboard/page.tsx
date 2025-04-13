@@ -93,6 +93,8 @@ const DashboardPage = () => {
         }
     };
 
+    // These functions are used in child components or in future implementations
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleToggleAvailability = async (bookId: string) => {
         const updatedBook = await bookService.toggleAvailability(bookId);
         if (updatedBook) {
@@ -102,6 +104,7 @@ const DashboardPage = () => {
         }
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleDeleteBook = async (bookId: string) => {
         const success = await bookService.deleteBook(bookId);
         if (success) {

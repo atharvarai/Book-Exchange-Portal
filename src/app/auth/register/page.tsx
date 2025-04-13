@@ -3,10 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Input from '@/components/Input';
 import Button from '@/components/Button';
 import { authService } from '@/lib/auth';
-import { UserRole } from '@/types';
 
 const RegisterPage = () => {
     const router = useRouter();
@@ -17,7 +15,7 @@ const RegisterPage = () => {
         email: '',
         password: '',
         mobileNumber: '',
-        role: 'seeker' as UserRole,
+        role: 'seeker' as 'owner' | 'seeker',
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -27,22 +25,20 @@ const RegisterPage = () => {
 
         try {
             const result = await authService.register(formData);
-            if (result.success && result.user) {
-                localStorage.setItem('user', JSON.stringify(result.user));
-                router.push('/dashboard');
+            if (result.success) {
+                router.push('/auth/login');
             } else {
                 setError(result.message);
             }
-        } catch (err) {
+        } catch (error) {
             setError('An error occurred during registration');
+            console.error(error);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-    ) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
@@ -52,7 +48,7 @@ const RegisterPage = () => {
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-sm">
                 <div>
                     <h2 className="text-center text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                        Create Account
+                        Create an Account
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
                         Already have an account?{' '}
@@ -101,21 +97,6 @@ const RegisterPage = () => {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                Password
-                            </label>
-                            <input
-                                id="password"
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
-                        </div>
-
-                        <div>
                             <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-2">
                                 Mobile Number
                             </label>
@@ -131,6 +112,21 @@ const RegisterPage = () => {
                         </div>
 
                         <div>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                Password
+                            </label>
+                            <input
+                                id="password"
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                        </div>
+
+                        <div>
                             <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
                                 I want to
                             </label>
@@ -139,10 +135,10 @@ const RegisterPage = () => {
                                 name="role"
                                 value={formData.role}
                                 onChange={handleChange}
-                                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                             >
-                                <option value="seeker">Borrow Books</option>
-                                <option value="owner">Share My Books</option>
+                                <option value="seeker">Find books to borrow/exchange</option>
+                                <option value="owner">Share my books with others</option>
                             </select>
                         </div>
                     </div>
