@@ -28,11 +28,7 @@ const LoginPage = () => {
             if (result.success && result.user) {
                 // Store user data in localStorage
                 localStorage.setItem('user', JSON.stringify(result.user));
-                if (result.user.role === 'owner') {
-                    setBooks(bookService.getBooksByOwner(result.user.id));
-                } else {
-                    setBooks(bookService.getAvailableBooks());
-                }
+                // Don't fetch books on login, they will be fetched in dashboard
                 router.push('/dashboard');
             } else {
                 setError(result.message);

@@ -11,15 +11,25 @@ A peer-to-peer book exchange platform that connects book owners with book seeker
 - Request management system for book owners
 - Status tracking for book requests (pending, accepted, rejected)
 - Responsive, modern UI with visual feedback
-- Persistent data storage using Express backend
 
 ## Tech Stack
 
-- Frontend: React + Next.js
-- Backend: Node.js + Express
-- Styling: Tailwind CSS
-- Language: TypeScript
-- Storage: In-memory (server-side)
+- **Frontend**: React + Next.js (App Router)
+- **Backend**: Node.js + Express
+- **Styling**: Tailwind CSS
+- **Language**: TypeScript
+- **Storage**: In-memory data structures (JavaScript Maps)
+
+## Data Storage
+
+This application uses a simple in-memory storage approach:
+
+- **Server-side storage**: All data (users, books, requests) is stored in JavaScript Map objects in the Express server's memory
+- **Transient storage**: Data persists only while the server is running. When the server restarts, it reinitializes with sample data
+- **Client-side storage**: Only user authentication information is stored in localStorage for session persistence
+- **Sample data**: The server initializes with sample users and books for demonstration purposes
+
+This storage approach is suitable for development and demonstration but would need to be replaced with a proper database for production use.
 
 ## Getting Started
 
@@ -53,7 +63,6 @@ cd ..
 ```bash
 cd server
 npm run dev
-cd ..
 ```
 
 2. In a separate terminal, start the frontend development server:
@@ -63,6 +72,18 @@ npm run dev
 
 3. Open [http://localhost:3000](http://localhost:3000) in your browser to access the frontend.
 4. The backend API will be running at [http://localhost:3001/api](http://localhost:3001/api).
+
+## Sample Accounts
+
+The application comes with pre-configured sample accounts:
+
+- **Book Owner**:
+  - Email: john@example.com
+  - Password: password123
+
+- **Book Seeker**:
+  - Email: jane@example.com
+  - Password: password123
 
 ## Project Structure
 
@@ -87,12 +108,12 @@ npm run dev
 
 ## Features Implementation
 
-### Backend API
+### Backend Architecture
 
-- RESTful API built with Express.js
-- In-memory data storage for quick setup and development
-- Endpoints for authentication, book management, and request handling
-- Controller-based architecture for clean code organization
+- **RESTful API**: Built with Express.js following REST principles
+- **In-memory Data Store**: Uses JavaScript Maps for transient data storage
+- **API Controllers**: Separate controller files for authentication, books, and requests
+- **Sample Data Initialization**: Pre-populates the application with sample users and books on server start
 
 ### Authentication
 - Email/password-based authentication
@@ -122,30 +143,6 @@ npm run dev
 - Disabled buttons with visual feedback when actions aren't available
 - Color-coded cards showing book availability status
 
-## What's Working
-
-- Complete authentication flow with persistent sessions
-- Book management system with multiple exchange options
-- Request creation and management workflow
-- Role-based permissions and view controls
-- Status tracking for all requests
-- Visual differentiation for book availability
-- Mutually exclusive option selection with helpful tooltips
-- Responsive UI that works on all device sizes
-- Backend API with Express.js
-- Client-server communication via RESTful endpoints
-
-## Future Improvements
-
-- Database integration (MongoDB, PostgreSQL)
-- Profile management for users
-- Search and advanced filtering functionality
-- Image upload for book covers
-- Chat system between owners and seekers
-- Rating and review system
-- Email notifications for request updates
-- JWT-based authentication
-
 ## API Endpoints
 
 ### Authentication
@@ -171,6 +168,17 @@ npm run dev
 - `POST /api/requests` - Create a new request
 - `PUT /api/requests/:id` - Update a request
 
+## Future Improvements
+
+- **Database Integration**: Replace in-memory storage with a persistent database (MongoDB, PostgreSQL)
+- **User Profiles**: Add detailed user profiles with avatars and personal information
+- **Advanced Search**: Implement full-text search and filtering by multiple criteria
+- **Image Upload**: Allow users to upload book cover images
+- **Chat System**: Implement real-time chat between owners and seekers
+- **Ratings & Reviews**: Add user rating and book review systems
+- **Email Notifications**: Send email alerts for request updates
+- **Authentication**: Implement JWT-based authentication with refresh tokens
+
 ## AI Tools Used
 
 This project was developed using:
@@ -185,4 +193,3 @@ This project was developed using:
   - Debugging and fixing edge cases
 
 Claude AI was particularly helpful for rapidly implementing features, resolving bugs, and enhancing the user interface with modern design elements. The AI-assisted workflow allowed for quick iterations and significant improvements to the application's functionality and user experience.
-
